@@ -17,24 +17,31 @@ class Shape:
         if shape_form == ShapeForms.I_SHAPE:
             self.shape = I_shape
             self.name = SHAPES[0]
+            self.max_number_of_turns = 1
         elif shape_form == ShapeForms.O_SHAPE:
             self.shape = O_shape
             self.name = SHAPES[1]
+            self.max_number_of_turns = 0
         elif shape_form == ShapeForms.T_SHAPE:
             self.shape = T_shape
             self.name = SHAPES[2]
+            self.max_number_of_turns = 3
         elif shape_form == ShapeForms.J_SHAPE:
             self.shape = J_shape
             self.name = SHAPES[3]
+            self.max_number_of_turns = 3
         elif shape_form == ShapeForms.L_SHAPE:
             self.shape = L_shape
             self.name = SHAPES[4]
+            self.max_number_of_turns = 3
         elif shape_form == ShapeForms.S_SHAPE:
             self.shape = S_shape
             self.name = SHAPES[5]
+            self.max_number_of_turns = 1
         elif shape_form == ShapeForms.Z_SHAPE:
             self.shape = Z_shape
             self.name = SHAPES[6]
+            self.max_number_of_turns = 1
         else:
             raise ValueError("Value {} is no valid shape form".format(shape_form))
         self.x = x
@@ -45,7 +52,7 @@ class Shape:
         self.placed = False
         self.placeable = True
 
-    def _turn(self, direc):
+    def turned(self, direc):
         if direc.value == Turn.RIGHT_TURN.value:
             return list(zip(*self.shape[::-1]))
         elif direc.value == Turn.LEFT_TURN.value:
@@ -96,10 +103,15 @@ class Shape:
             self.y_distance_to_collision = -1
 
     def turn_in_direction(self, direc: Turn):
-        """turns shape in direction specified by direct"""
-        potential_shape = self._turn(direc)
-        if not self.board.has_collision(potential_shape, self.x, self.y):
-            self.shape = potential_shape
-            # distance if know not known
-            self.y_distance_to_collision = -1
+        """
+        :returns if shape was turned
 
+        turns shape in direction specified by direct
+        """
+        potential_shape_structure = self.turned(direc)
+        if not self.board.has_collision(potential_shape_structure, self.x, self.y):
+            self.shape = potential_shape_structure
+            # distance is now unknown
+            self.y_distance_to_collision = -1
+            return True
+        return False

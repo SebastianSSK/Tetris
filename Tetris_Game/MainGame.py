@@ -12,7 +12,7 @@ import random
 
 
 class Tetris:
-    def __init__(self, interactive=True, visible=True, offset_x=0, offset_y=0,display_statistics=True,
+    def __init__(self, interactive=True, visible=True, offset_x=0, offset_y=0, display_statistics=True,
                  display_controls=True, title="Tetris", lock_step=False, scale=1):
         self.tetris_model = TetrisModel(interactive, visible)
         self.tetris_view = TetrisView(tetris_model=self.tetris_model,
@@ -189,9 +189,14 @@ class TetrisView:
                              (a * self.grid_size + self.offset_x, self.offset_y,
                               self.grid_size, n))  # x,  y, width, height
 
-            # Tetris (tile) layer
+        if self.tetris_model.game_over:
+            self.draw_game_over()
+            return
+
+        # Tetris (tile) layer
         # Draw board first
         self.draw_board()
+
         # Draw hypothesized shape
         if DISPLAY_PREDICTION:
             self.draw_shape(True)
@@ -208,6 +213,18 @@ class TetrisView:
         text_image = pygame.font.SysFont(FONT_NAME, int(font_size * self.text_scale)) \
             .render(text, False, self.get_color_tuple(COLORS[color_str]))
         self.screen.blit(text_image, (x + self.offset_x, y + self.offset_y))
+
+    def draw_text_central(self, text: str, font_size: int, x: int, y: int, width: int, color_str="WHITE"):
+        text_image = pygame.font.SysFont(FONT_NAME, int(font_size * self.text_scale)) \
+            .render(text, False, self.get_color_tuple(COLORS[color_str]))
+        self.screen.blit(text_image, (x + self.offset_x + width // 2 - text_image.get_width(),
+                                      y + self.offset_y))
+
+    def draw_game_over(self):
+        self.draw_text_central(text="GAME OVER", font_size=64,
+                               x=self.margin, y=self.screen_height // 2,
+                               width=self.screen_width,
+                               color_str="BACKGROUND_BLACK")
 
     def draw_statistics(self):
         #################
@@ -408,10 +425,23 @@ class TetrisControl:
 
         self.tetris_model.score += total_score
         self.tetris_model.lines += score_count
-        log("Cleared {} rows with score {}".format(score_count, total_score), 3)
+        log("Cleared {} row{} with score {}".format(score_count, 's' if score_count > 1 else '', total_score), 3)
         # Calculate game speed
-        pygame.time.set_timer(pygame.USEREVENT + 1, SPEED_DEFAULT if not SPEED_SCALE_ENABLED else int(
-            max(25, SPEED_DEFAULT - self.tetris_model.score * SPEED_SCALE)))
+        if self.tetris_model.interactive:
+            pygame.time.set_timer(pygame.USEREVENT + 1, SPEED_DEFAULT if not SPEED_SCALE_ENABLED else int(
+                max(25, SPEED_DEFAULT - self.tetris_model.score * SPEED_SCALE)))
+
+    def reset_game(self):
+        self.tetris_model.game_board.clear()
+        self.tetris_model.shapes.clear()
+        self.generate_shapes()
+        self.tetris_model.game_over = False
+
+        self.tetris_model.high_score = self.tetris_model.score
+        self.tetris_model.high_score_lines = self.tetris_model.lines
+        self.tetris_model.score = 0
+        self.tetris_model.lines = 0
+        self.tetris_model.fitness = 0
 
     # GAME CONTROL METHODS
     def toggle_pause(self):

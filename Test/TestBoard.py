@@ -112,7 +112,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(0, self.board.column_list[8].column[1])
         self.assertNotEqual(0, self.board.column_list[9].column[1])
 
-        self.assertTrue(all([column.max_height == -1 or column.column[column.max_height] != 0
+        self.assertTrue(all([column.highest_index == -1 or column.column[column.highest_index] != 0
                              for column in self.board.column_list]))
 
 

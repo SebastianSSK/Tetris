@@ -12,5 +12,5 @@ from Tetris_Game.MainGame import Tetris
     stats = pstats.Stats(profiler).sort_stats('cumtime')
     stats.print_stats()"""
 if __name__ == '__main__':
-    TetrisParallel(2 * 49)
+    TetrisParallel(2*9)
     # Tetris(scale=1)
