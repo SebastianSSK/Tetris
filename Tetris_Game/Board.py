@@ -1,5 +1,3 @@
-import math
-
 from Tetris_Game.Settings import GRID_ROW_COUNT, GRID_COL_COUNT
 
 
@@ -21,8 +19,7 @@ class TetrisColumn:
         """find all new wholes that have formed between previous max height
         and new max height"""
         sign = 1 if new_max_height > prev_max_height else -1
-        for i in range(prev_max_height + sign, new_max_height, sign):
-            self.number_of_wholes += sign if self.column[i] == 0 else 0
+        self.number_of_wholes += new_max_height - prev_max_height + sign
 
     def _find_next_highest_element(self, start_index=GRID_COL_COUNT - 1):
         """find next element starting at start index
@@ -106,7 +103,6 @@ class TetrisColumn:
         all elements at higher positions move down one position"""
         if any([self.column[i] == 0 for i in indices]):
             raise IndexError("column has no element at given index ")
-        n = len(indices)
         # remove elements at given indices
         for index in indices:
             self.column[index] = 0
@@ -118,6 +114,9 @@ class TetrisColumn:
             self.highest_index = self._find_next_highest_element(indices[0] - 1)
             # check if new wholes were removed
             self._update_number_of_wholes(indices[0], self.highest_index)
+
+    def has_element_at_position(self, y):
+        return self.column[y] > 0
 
     def distance_to_next_element(self, y):
         """:param y position of the element
@@ -142,12 +141,15 @@ class TetrisBoard:
         :returns if the shape at position x, y collides with any other block or the wall of the board"""
         if self._violates_constraints(shape, x, y):
             return True
-        try:
-            result = self.distance_to_collision(shape, x, y)
-            return result < 0
-        # y coordinate is higher then board max
-        except OverflowError:
-            return True
+        # for every line in shape
+        for rel_x, line in enumerate(shape):
+            for rel_y, val in enumerate(line):
+                if val == 0:
+                    continue
+                # if column has already element at that position -> shape has collision
+                if self.column_list[x + rel_x].has_element_at_position(y - rel_y):
+                    return True
+        return False
 
     def distance_to_collision(self, shape, x, y):
         """
@@ -157,17 +159,22 @@ class TetrisBoard:
         :returns distance to collision regarding the given shape
         ans its coordinates x, y"""
         result = y + 1 - len(shape[0])
-        if y > GRID_ROW_COUNT:
-            raise OverflowError("value {} is higher then max height {} of board".format(y, GRID_ROW_COUNT))
-        elif result < 0:
+        if result < 0:
             return result
+
         # for every line of the shape
         for rel_x, line in enumerate(shape):
             for rel_y, val in enumerate(line):
                 if val == 0:
                     continue
-                # check if column has already block at that index
-                result = min(result, self.column_list[x + rel_x].distance_to_next_element(y - rel_y))
+                distance = self.column_list[x + rel_x].distance_to_next_element(y - rel_y)
+                # check if distance is smaller then current min distance
+                if distance < result:
+                    result = distance
+                    # check if collision happened
+                    if result < 0:
+                        return result
+
         return result
 
     def place_shape(self, shape, x, y, distance_to_collision=None):
@@ -186,7 +193,7 @@ class TetrisBoard:
         # set y value where the ship will be placed
         y -= distance_to_collision
         # if y coordinate is bigger or equal to GRID_ROW_COUNT -> shape can not be placed
-        if y >= GRID_ROW_COUNT or distance_to_collision < 0:
+        if y >= GRID_ROW_COUNT:
             return False
         # for every line in shape
         for rel_x, line in enumerate(shape):
@@ -261,7 +268,7 @@ class TetrisBoard:
         result["valid"] = True
         return result
 
-    def clear(self):
+    def reset_board(self):
         """clear board by deleting all columns"""
         self.column_list = [TetrisColumn() for _ in range(GRID_COL_COUNT)]
         # count how many elements are in a given row

@@ -182,20 +182,18 @@ class TetrisView:
         ################
         # Layered background layer
         n = self.grid_size * GRID_ROW_COUNT
-        padding = self.screen_height - n
         for a in range(GRID_COL_COUNT):
             color = self.get_color_tuple(COLORS.get("BACKGROUND_DARK" if a % 2 == 0 else "BACKGROUND_LIGHT"))
-            pygame.draw.rect(self.screen, color,
-                             (a * self.grid_size + self.offset_x, self.offset_y,
-                              self.grid_size, n))  # x,  y, width, height
-
-        if self.tetris_model.game_over:
-            self.draw_game_over()
-            return
+            # x,  y, width, height
+            pygame.draw.rect(self.screen, color, (a * self.grid_size + self.offset_x, self.offset_y, self.grid_size, n))
 
         # Tetris (tile) layer
         # Draw board first
         self.draw_board()
+
+        if self.tetris_model.game_over:
+            self.draw_game_over()
+            return
 
         # Draw hypothesized shape
         if DISPLAY_PREDICTION:
@@ -214,17 +212,21 @@ class TetrisView:
             .render(text, False, self.get_color_tuple(COLORS[color_str]))
         self.screen.blit(text_image, (x + self.offset_x, y + self.offset_y))
 
-    def draw_text_central(self, text: str, font_size: int, x: int, y: int, width: int, color_str="WHITE"):
-        text_image = pygame.font.SysFont(FONT_NAME, int(font_size * self.text_scale)) \
+    def get_text_central(self, text: str, font_size: int, color_str="WHITE"):
+        return pygame.font.SysFont(FONT_NAME, int(font_size * self.text_scale)) \
             .render(text, False, self.get_color_tuple(COLORS[color_str]))
-        self.screen.blit(text_image, (x + self.offset_x + width // 2 - text_image.get_width(),
-                                      y + self.offset_y))
 
     def draw_game_over(self):
-        self.draw_text_central(text="GAME OVER", font_size=64,
-                               x=self.margin, y=self.screen_height // 2,
-                               width=self.screen_width,
-                               color_str="BACKGROUND_BLACK")
+        text_image = self.get_text_central(text="GAME OVER", font_size=64, color_str="BACKGROUND_BLACK")
+
+        pygame.draw.rect(self.screen,
+                         self.get_color_tuple(COLORS.get("RED")),
+                         (self.offset_x,
+                          self.screen_height // 2 + self.offset_y,
+                          self.text_x_start - self.margin, text_image.get_height()))
+
+        self.screen.blit(text_image, (self.margin + self.offset_x + self.screen_width // 2 - text_image.get_width(),
+                                      self.screen_height // 2 + self.offset_y))
 
     def draw_statistics(self):
         #################
@@ -432,7 +434,7 @@ class TetrisControl:
                 max(25, SPEED_DEFAULT - self.tetris_model.score * SPEED_SCALE)))
 
     def reset_game(self):
-        self.tetris_model.game_board.clear()
+        self.tetris_model.game_board.reset_board()
         self.tetris_model.shapes.clear()
         self.generate_shapes()
         self.tetris_model.game_over = False

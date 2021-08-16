@@ -29,7 +29,7 @@ class Agent:
         self.mutation_chance = mutation_chance
 
     def _weight_position(self, lines_cleared, height_sum, hole_count, bumpiness):
-        score = self.weight_line_cleared * lines_cleared
+        score = self.weight_line_cleared * lines_cleared**5
         score += self.weight_aggregate_height * height_sum
         score += self.weight_holes * hole_count
         score += self.weight_bumpiness * bumpiness
@@ -99,7 +99,7 @@ class Agent:
         return value
 
     def get_mutation_value(self, agent, value_1, value_2):
-        return (self.mutate_value(value_1) + agent.mutate_value(value_2)) / 2
+        return self.mutate_value(value_1) if random.random() < 0.5 else agent.mutate_value(value_2)
 
     def get_child(self, agent, game):
         weight_holes = self.get_mutation_value(agent, self.weight_holes, agent.weight_holes)

@@ -25,7 +25,9 @@ class TetrisParallel:
             self.tetris_parallel_view.draw()
             self.tetris_parallel_controller.update()
             clock.tick(MAX_FPS)
+        print("DONE_1")
         pygame.quit()
+        print("DONE_2")
 
 
 class TetrisParallelModel:
@@ -37,8 +39,8 @@ class TetrisParallelModel:
         self.best_game = 0
 
         self.running = True
-        self.display_best_over_all = False
-        self.current_index = 0
+        self.display_best_of_generation = False
+        self.current_text_index = 0
 
         self.high_score = 0
         self.high_score_lines = 0
@@ -48,6 +50,7 @@ class TetrisParallelModel:
         self.weight_holes = 0
         self.weight_bumpiness = 0
         self.mutation_chance = 0
+        self.timer = 0
 
         # get scale based of number of games
         self.number_of_rows = 2 * ceil(sqrt(0.5 * number_of_games))
@@ -141,8 +144,8 @@ class TetrisParallelView:
 
         self._draw_text_center_x(text="Tetris Parallel", font_size=64, x=self.x, y=self.y, width=self.width)
 
-        if not self.tetris_parallel_model.display_best_over_all:
-            self.tetris_parallel_model.current_index = 0
+        if not self.tetris_parallel_model.display_best_of_generation:
+            self.tetris_parallel_model.current_text_index = 0
             # get best game
             i = self.tetris_parallel_model.best_game
             # best agent of current generation
@@ -171,7 +174,7 @@ class TetrisParallelView:
             # best agent of all generations
             margin = self._draw_text_char_by_char_center_x(text="Best AI-Agent over all", font_size=32,
                                                            x=self.x, y=y, width=self.width,
-                                                           index=self.tetris_parallel_model.current_index)
+                                                           index=self.tetris_parallel_model.current_text_index)
 
             lines_cleared = self.tetris_parallel_model.weight_line_cleared
             aggregate_height = self.tetris_parallel_model.weight_aggregate_height
@@ -183,23 +186,23 @@ class TetrisParallelView:
             y += 64
             self._draw_text_char_by_char(text="Weight aggregate height: {}".format(aggregate_height), font_size=16,
                                          x=x, y=y,
-                                         index=self.tetris_parallel_model.current_index)
+                                         index=self.tetris_parallel_model.current_text_index)
             y += 32
             self._draw_text_char_by_char(text="Weight holes: {}".format(weight_holes), font_size=16,
                                          x=x, y=y,
-                                         index=self.tetris_parallel_model.current_index)
+                                         index=self.tetris_parallel_model.current_text_index)
             y += 32
             self._draw_text_char_by_char(text="Weight bumpiness: {}".format(weight_bumpiness), font_size=16,
                                          x=x, y=y,
-                                         index=self.tetris_parallel_model.current_index)
+                                         index=self.tetris_parallel_model.current_text_index)
             y += 32
             self._draw_text_char_by_char(text="Weight lines cleared: {}".format(lines_cleared), font_size=16,
                                          x=x, y=y,
-                                         index=self.tetris_parallel_model.current_index)
+                                         index=self.tetris_parallel_model.current_text_index)
             y += 32
             self._draw_text_char_by_char(text="Mutation chance: {}".format(mutation_chance), font_size=16,
                                          x=x, y=y,
-                                         index=self.tetris_parallel_model.current_index)
+                                         index=self.tetris_parallel_model.current_text_index)
 
             high_score = self.tetris_parallel_model.high_score
             high_score_lines = self.tetris_parallel_model.high_score_lines
@@ -207,11 +210,11 @@ class TetrisParallelView:
             y += 64
             self._draw_text_char_by_char(text="Highest score: {}".format(high_score), font_size=16,
                                          x=x, y=y,
-                                         index=self.tetris_parallel_model.current_index)
+                                         index=self.tetris_parallel_model.current_text_index)
             y += 32
             self._draw_text_char_by_char(text="Highest number of lines cleared: {}".format(high_score_lines),
                                          font_size=16, x=x, y=y,
-                                         index=self.tetris_parallel_model.current_index)
+                                         index=self.tetris_parallel_model.current_text_index)
 
 
 class TetrisParallelController:
@@ -220,7 +223,8 @@ class TetrisParallelController:
 
         # map keys to methods
         self.key_actions = {
-            "TAB": lambda: self.toggle_display_mode()
+            "TAB": lambda: self.toggle_display_mode(),
+            "c": lambda: self.start_new_round()
         }
 
         self.generate_games()
@@ -231,14 +235,16 @@ class TetrisParallelController:
             if event.type == pygame.QUIT:
                 self.quit()
             elif event.type == pygame.USEREVENT + 1:
+                self.tetris_parallel_model.timer += 1
                 self.calculate_agent_moves()
                 self.drop()
                 # check which game has highest score now
-                self.update_best_game()
+                self.find_best_agent()
                 if self.all_games_over():
+                    self.tetris_parallel_model.timer = 0
                     self.start_new_round()
-            elif event.type == pygame.USEREVENT + 2 and self.tetris_parallel_model.display_best_over_all:
-                self.tetris_parallel_model.current_index += 1
+            elif event.type == pygame.USEREVENT + 2 and self.tetris_parallel_model.display_best_of_generation:
+                self.tetris_parallel_model.current_text_index += 1
             elif event.type == pygame.KEYDOWN and self.tetris_parallel_model.running:
                 for key in self.key_actions:
                     if event.key == eval("pygame.K_" + key):
@@ -248,12 +254,16 @@ class TetrisParallelController:
         for agent in self.tetris_parallel_model.agents:
             agent.calculate_next_move()
 
-    def update_best_game(self):
+    def find_best_agent(self):
         """finds index of game with highest score"""
-        index = self.tetris_parallel_model.best_game
+        index = 0
+        current_score = 0
         for i in range(0, len(self.tetris_parallel_model.tetris_games)):
+            if self.tetris_parallel_model.tetris_games[i].tetris_model.game_over:
+                continue
             score = self.tetris_parallel_model.tetris_games[i].tetris_model.score
-            if score > self.tetris_parallel_model.tetris_games[index].tetris_model.score:
+            if score > current_score:
+                current_score = score
                 index = i
         self.tetris_parallel_model.best_game = index
 
@@ -295,17 +305,21 @@ class TetrisParallelController:
             self.tetris_parallel_model.weight_aggregate_height = agents_game_mapping[0][0].weight_aggregate_height
             self.tetris_parallel_model.mutation_chance = agents_game_mapping[0][0].mutation_chance
 
-        # best agent will be part of next generation
-        agents = [agents_game_mapping[0][0]]
-
+        print("START")
+        for agent_game in agents_game_mapping:
+            print(agent_game[1].tetris_model.score)
+        print("END")
         for game in self.tetris_parallel_model.tetris_games:
             game.tetris_controller.reset_game()
 
+        # best agent will be part of next generation
+        agents_game_mapping[0][0].game = self.tetris_parallel_model.tetris_games[0]
+        agents = [agents_game_mapping[0][0]]
         for i in range(1, self.tetris_parallel_model.number_of_games):
-            id_1 = random.randint(0, n // 2)
+            id_1 = random.randint(0, n - 1)
             id_2 = random.randint(0, n - 1)
-
             agents.append(agents_game_mapping[id_1][0].get_child(agents_game_mapping[id_2][0], games[i]))
+        self.tetris_parallel_model.agents = agents
 
     def all_games_over(self):
         return all([game.tetris_model.game_over for game in self.tetris_parallel_model.tetris_games])
@@ -315,7 +329,7 @@ class TetrisParallelController:
             self.tetris_parallel_model.agents.append(Agent(self.tetris_parallel_model.tetris_games[i]))
 
     def toggle_display_mode(self):
-        self.tetris_parallel_model.display_best_over_all = not self.tetris_parallel_model.display_best_over_all
+        self.tetris_parallel_model.display_best_of_generation = not self.tetris_parallel_model.display_best_of_generation
 
     def drop(self):
         for tetris_game in self.tetris_parallel_model.tetris_games:

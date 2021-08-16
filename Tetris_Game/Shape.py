@@ -50,7 +50,6 @@ class Shape:
 
         self.y_distance_to_collision = -1
         self.placed = False
-        self.placeable = True
 
     def turned(self, direc):
         if direc.value == Turn.RIGHT_TURN.value:
@@ -74,10 +73,9 @@ class Shape:
         """place this shape in the board"""
         # check if distance is already known
         if self.y_distance_to_collision < 0:
-            self.placeable = self.board.place_shape(self.shape, self.x, self.y)
+            self.placed = self.board.place_shape(self.shape, self.x, self.y)
         else:
-            self.placeable = self.board.place_shape(self.shape, self.x, self.y, self.y_distance_to_collision)
-        self.placed = self.placeable
+            self.placed = self.board.place_shape(self.shape, self.x, self.y, self.y_distance_to_collision)
 
     def decrease_y(self):
         if self.placed:

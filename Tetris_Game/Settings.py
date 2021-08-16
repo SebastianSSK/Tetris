@@ -13,7 +13,7 @@ HAS_DISPLAY = True
 FONT_NAME = "Consolas"
 
 # debug level
-MIN_DEBUG_LEVEL = 1
+MIN_DEBUG_LEVEL = 10
 
 # grid dimensions
 GRID_ROW_COUNT = 20
