@@ -4,7 +4,7 @@ SCREEN_HEIGHT_ALGORITHM = (lambda size_scale: int(720 * size_scale))
 
 PER_STEP_SCORE_GAIN = 0.001
 
-SPEED_DEFAULT = 5  # 750 MS
+SPEED_DEFAULT = 10  # speed in ms
 SPEED_SCALE_ENABLED = True  # game gets faster with more points?
 SPEED_SCALE = 0.05  # speed = max(50, 750 - SCORE * SPEED_SCALE)
 DISPLAY_PREDICTION = True
@@ -20,7 +20,7 @@ GRID_ROW_COUNT = 20
 GRID_COL_COUNT = 10
 
 SCREEN_RATIO = 0.55
-MAX_FPS = 30
+MAX_FPS = 60
 
 ALWAYS_DRAW = True
 STEP_ACTION = True
@@ -71,7 +71,6 @@ MESSAGES = {
 # shapes
 SHAPE_CHARS = ['I', 'O', 'T', 'J', 'L', 'S', 'Z']
 SHAPES_ID = {'I': 1, 'O': 2, 'T': 3, 'J': 4, 'L': 5, 'S': 6, 'Z': 7}
-
 
 I_shape = [[1], [1], [1], [1]]
 

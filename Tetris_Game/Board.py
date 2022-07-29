@@ -119,8 +119,10 @@ class TetrisColumn:
         return self.column[y] > 0
 
     def distance_to_next_element(self, y):
-        """:param y position of the element
-        :returns number of blocks between y and next highest block, if y is on a block returns -1"""
+        """
+        :param: y position of the element
+        :return: number of blocks between y and next highest block, if y is on a block returns -1
+        """
         return y - self.highest_index - 1 if y >= self.highest_index else y - self._find_next_highest_element(y) - 1
 
 
@@ -210,9 +212,11 @@ class TetrisBoard:
         return True
 
     def remove_full_rows(self):
-        """:returns number of rows removed
+        """
+        removed all rows that are full (not contain any zeros)
 
-        removed all rows that are full (not contain any zeros)"""
+        :return: number of rows removed
+        """
         # find all indices of of full rows
         remove_indices = [index for index in range(GRID_ROW_COUNT - 1, -1, -1)
                           if self.row_counter_list.column[index] == GRID_COL_COUNT]
@@ -275,18 +279,24 @@ class TetrisBoard:
         self.row_counter_list = TetrisColumn()
 
     def get_hole_count(self):
-        """:returns number of wholes on the board"""
+        """
+        :return: number of wholes on the board
+        """
         result = 0
         for column in self.column_list:
             result += column.number_of_wholes
         return result
 
     def get_col_heights(self):
-        """:returns list containing height of each column"""
+        """
+        :return: list containing height of each column
+        """
         return [column.highest_index + 1 for column in self.column_list]
 
     def get_bumpiness(self):
-        """:returns sum of differences between adjacent columns"""
+        """
+        :return: sum of differences between adjacent columns
+        """
         result = 0
         for i in range(1, GRID_COL_COUNT):
             result += abs(self.column_list[i].highest_index - self.column_list[i - 1].highest_index)

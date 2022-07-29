@@ -18,7 +18,7 @@ class Agent:
         self.weight_aggregate_height = 2 * random.random() - 1
         self.weight_holes = 2 * random.random() - 1
         self.weight_bumpiness = 2 * random.random() - 1
-        self.mutation_chance = random.random()
+        self.mutation_weight = random.random()
 
     def set_weights(self, weight_line_cleared, weight_aggregate_height, weight_holes,
                     weight_bumpiness, mutation_chance):
@@ -26,7 +26,7 @@ class Agent:
         self.weight_aggregate_height = weight_aggregate_height
         self.weight_holes = weight_holes
         self.weight_bumpiness = weight_bumpiness
-        self.mutation_chance = mutation_chance
+        self.mutation_weight = mutation_chance
 
     def _weight_position(self, lines_cleared, height_sum, hole_count, bumpiness):
         score = self.weight_line_cleared * lines_cleared**5
@@ -46,7 +46,7 @@ class Agent:
                      "move": 0,
                      "score": -math.inf
                      }
-        # every turn
+        # for every turn
         for i in range(turns):
             # for every position shape can be placed
             for x in range(0, GRID_COL_COUNT - len(current_shape.shape) + 1):
@@ -58,7 +58,7 @@ class Agent:
                                               val["max_heights"],
                                               val["number_of_holes"],
                                               val["bumpiness"])
-                # test if current score is better then best score
+                # test if current score is better than best score
                 if score > best_move["score"]:
                     best_move["turn"] = i
                     best_move["move"] = x - current_shape.x
@@ -85,21 +85,20 @@ class Agent:
         for i in range(next_move["turn"]):
             self.game.tetris_controller.rotate_tile(Turn.LEFT_TURN)
 
-        direc = Direction.LEFT if next_move["move"] < 0 else Direction.RIGHT
+        direction = Direction.LEFT if next_move["move"] < 0 else Direction.RIGHT
 
         for i in range(abs(next_move["move"])):
-            self.game.tetris_controller.move_shape(direc)
+            self.game.tetris_controller.move_shape(direction)
 
         # self.game.tetris_controller.drop(True)
 
     def mutate_value(self, value: float):
-        sign = 1 if random.random() > 0.5 else -1
-        if self.mutation_chance > random.random():
-            return (value + sign * self.mutation_chance) / 2
-        return value
+        # random value in (-1, 1)
+        mutation_value = 2 * random.random() - 1
+        return (value + mutation_value * self.mutation_weight) / 2
 
     def get_mutation_value(self, agent, value_1, value_2):
-        return self.mutate_value(value_1) if random.random() < 0.5 else agent.mutate_value(value_2)
+        return self.mutate_value(value_1) * 0.5 + agent.mutate_value(value_2) * 0.5
 
     def get_child(self, agent, game):
         weight_holes = self.get_mutation_value(agent, self.weight_holes, agent.weight_holes)
@@ -111,7 +110,7 @@ class Agent:
         weight_aggregate_height = self.get_mutation_value(agent, self.weight_aggregate_height,
                                                           agent.weight_aggregate_height)
 
-        mutation_chance = self.get_mutation_value(agent, self.mutation_chance, agent.mutation_chance)
+        mutation_chance = self.get_mutation_value(agent, self.mutation_weight, agent.mutation_weight)
 
         result_agent = Agent(game)
         result_agent.set_weights(weight_line_cleared=weight_line_cleared,

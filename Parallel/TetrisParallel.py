@@ -21,13 +21,13 @@ class TetrisParallel:
         pygame.time.set_timer(pygame.USEREVENT + 1, SPEED_DEFAULT)
         pygame.time.set_timer(pygame.USEREVENT + 2, DISPLAY_TEXT_SPEED)
         clock = pygame.time.Clock()
+        # while game is running
         while self.tetris_parallel_model.running:
+            # draw and update game
             self.tetris_parallel_view.draw()
             self.tetris_parallel_controller.update()
             clock.tick(MAX_FPS)
-        print("DONE_1")
         pygame.quit()
-        print("DONE_2")
 
 
 class TetrisParallelModel:
@@ -99,43 +99,20 @@ class TetrisParallelView:
         pygame.display.update()
 
     def _draw_text_center_x(self, text: str, font_size: int, x: int, y: int, width: int, color_str="WHITE"):
-        """:param text the text that will be displayed
-           :param font_size font size that will be used to display the text
-           :param x x coordinate of the text (left)
-           :param y y coordinates of the text (top)
-           :param width to which the text should be centered
-           :param color_str Color of the text with default white"""
+        """:param: text the text that will be displayed
+           :param: font_size font size that will be used to display the text
+           :param: x x coordinate of the text (left)
+           :param: y y coordinates of the text (top)
+           :param: width to which the text should be centered
+           :param: color_str Color of the text with default white"""
         text_image = pygame.font.SysFont(FONT_NAME, int(font_size)) \
             .render(text, False, get_color_tuple(COLORS[color_str]))
 
         self.screen.blit(text_image, (x + width // 2 - text_image.get_width() // 2, y))
 
-    def _draw_text_char_by_char_center_x(self, text: str, font_size: int, x: int, y: int, width: int, index: int,
-                                         color_str="PADDING_DARK"):
-        """:param text the text that will be displayed
-           :param font_size font size that will be used to display the text
-           :param x x coordinate of the text (left)
-           :param y y coordinates of the text (top)
-           :param width to which the text should be centered
-           :param index up to which text should be displayed
-           :param color_str Color of the text with default white
-           :returns x coordinate where text was placed"""
+    def draw_text(self, text: str, font_size: int, x: int, y: int, index: int, color_str="WHITE"):
         text_image = pygame.font.SysFont(FONT_NAME, int(font_size)) \
-            .render(text[:index], False, get_color_tuple(COLORS[color_str]))
-        x_pos = x + width // 2 - text_image.get_width() // 2
-        self.screen.blit(text_image, (x_pos, y))
-        return x_pos
-
-    def _draw_text_char_by_char(self, text: str, font_size: int, x: int, y: int, index: int, color_str="PADDING_DARK"):
-        """:param text the text that will be displayed
-           :param font_size font size that will be used to display the text
-           :param x x coordinate of the text (left)
-           :param y y coordinates of the text (top)
-           :param index up to which text should be displayed
-           :param color_str Color of the text with default white"""
-        text_image = pygame.font.SysFont(FONT_NAME, int(font_size)) \
-            .render(text[:index], False, get_color_tuple(COLORS[color_str]))
-
+            .render(text, False, get_color_tuple(COLORS[color_str]))
         self.screen.blit(text_image, (x, y))
 
     def draw_right_side(self):
@@ -168,13 +145,12 @@ class TetrisParallelView:
             self.tetris_parallel_model.tetris_games[i].tetris_view.set_scale(std_scale)
             self.tetris_parallel_model.tetris_games[i].tetris_view.set_offset(std_view_offset_x, std_view_offset_y)
 
-        # display data of best agent of all generations
+        # display data of the best agent of all generations
         else:
             y = self.y + 96
             # best agent of all generations
-            margin = self._draw_text_char_by_char_center_x(text="Best AI-Agent over all", font_size=32,
-                                                           x=self.x, y=y, width=self.width,
-                                                           index=self.tetris_parallel_model.current_text_index)
+            self._draw_text_center_x(text="Best AI-Agent over all", font_size=32,
+                                     x=self.x, y=y, width=self.width)
 
             lines_cleared = self.tetris_parallel_model.weight_line_cleared
             aggregate_height = self.tetris_parallel_model.weight_aggregate_height
@@ -182,39 +158,39 @@ class TetrisParallelView:
             weight_bumpiness = self.tetris_parallel_model.weight_bumpiness
             mutation_chance = self.tetris_parallel_model.mutation_chance
 
-            x = margin
+            x = self.x + MARGIN
             y += 64
-            self._draw_text_char_by_char(text="Weight aggregate height: {}".format(aggregate_height), font_size=16,
-                                         x=x, y=y,
-                                         index=self.tetris_parallel_model.current_text_index)
+            self.draw_text(text=f"Weight aggregate height: {aggregate_height:.3f}", font_size=16,
+                           x=x, y=y,
+                           index=self.tetris_parallel_model.current_text_index)
             y += 32
-            self._draw_text_char_by_char(text="Weight holes: {}".format(weight_holes), font_size=16,
-                                         x=x, y=y,
-                                         index=self.tetris_parallel_model.current_text_index)
+            self.draw_text(text=f"Weight holes: {weight_holes:.3f}", font_size=16,
+                           x=x, y=y,
+                           index=self.tetris_parallel_model.current_text_index)
             y += 32
-            self._draw_text_char_by_char(text="Weight bumpiness: {}".format(weight_bumpiness), font_size=16,
-                                         x=x, y=y,
-                                         index=self.tetris_parallel_model.current_text_index)
+            self.draw_text(text=f"Weight bumpiness: {weight_bumpiness:.3f}", font_size=16,
+                           x=x, y=y,
+                           index=self.tetris_parallel_model.current_text_index)
             y += 32
-            self._draw_text_char_by_char(text="Weight lines cleared: {}".format(lines_cleared), font_size=16,
-                                         x=x, y=y,
-                                         index=self.tetris_parallel_model.current_text_index)
+            self.draw_text(text=f"Weight lines cleared: {lines_cleared:.3f}", font_size=16,
+                           x=x, y=y,
+                           index=self.tetris_parallel_model.current_text_index)
             y += 32
-            self._draw_text_char_by_char(text="Mutation chance: {}".format(mutation_chance), font_size=16,
-                                         x=x, y=y,
-                                         index=self.tetris_parallel_model.current_text_index)
+            self.draw_text(text=f"Mutation chance: {mutation_chance:.3f}", font_size=16,
+                           x=x, y=y,
+                           index=self.tetris_parallel_model.current_text_index)
 
             high_score = self.tetris_parallel_model.high_score
             high_score_lines = self.tetris_parallel_model.high_score_lines
 
             y += 64
-            self._draw_text_char_by_char(text="Highest score: {}".format(high_score), font_size=16,
-                                         x=x, y=y,
-                                         index=self.tetris_parallel_model.current_text_index)
+            self.draw_text(text=f"Highest score: {high_score:.3f}", font_size=16,
+                           x=x, y=y,
+                           index=self.tetris_parallel_model.current_text_index)
             y += 32
-            self._draw_text_char_by_char(text="Highest number of lines cleared: {}".format(high_score_lines),
-                                         font_size=16, x=x, y=y,
-                                         index=self.tetris_parallel_model.current_text_index)
+            self.draw_text(text=f"Highest number of lines cleared: {high_score_lines}",
+                           font_size=16, x=x, y=y,
+                           index=self.tetris_parallel_model.current_text_index)
 
 
 class TetrisParallelController:
@@ -296,29 +272,26 @@ class TetrisParallelController:
         agents_game_mapping = sorted(agents_game_mapping, reverse=True, key=lambda x: x[1].tetris_model.score)[:n]
 
         if agents_game_mapping[0][1].tetris_model.score > self.tetris_parallel_model.high_score:
-            self.tetris_parallel_model.high_score = agents_game_mapping[0][1].tetris_model.score
-            self.tetris_parallel_model.high_score_lines = agents_game_mapping[0][1].tetris_model.lines
+            self.update_best_overall_agent(high_score=agents_game_mapping[0][1].tetris_model.score,
+                                           high_score_lines=agents_game_mapping[0][1].tetris_model.lines,
+                                           weight_line_cleared=agents_game_mapping[0][0].weight_line_cleared,
+                                           weight_holes=agents_game_mapping[0][0].weight_holes,
+                                           weight_bumpiness=agents_game_mapping[0][0].weight_bumpiness,
+                                           weight_aggregate_height=agents_game_mapping[0][0].weight_aggregate_height,
+                                           mutation_chance=agents_game_mapping[0][0].mutation_weight)
 
-            self.tetris_parallel_model.weight_line_cleared = agents_game_mapping[0][0].weight_line_cleared
-            self.tetris_parallel_model.weight_holes = agents_game_mapping[0][0].weight_holes
-            self.tetris_parallel_model.weight_bumpiness = agents_game_mapping[0][0].weight_bumpiness
-            self.tetris_parallel_model.weight_aggregate_height = agents_game_mapping[0][0].weight_aggregate_height
-            self.tetris_parallel_model.mutation_chance = agents_game_mapping[0][0].mutation_chance
-
-        print("START")
-        for agent_game in agents_game_mapping:
-            print(agent_game[1].tetris_model.score)
-        print("END")
         for game in self.tetris_parallel_model.tetris_games:
             game.tetris_controller.reset_game()
 
         # best agent will be part of next generation
         agents_game_mapping[0][0].game = self.tetris_parallel_model.tetris_games[0]
+
         agents = [agents_game_mapping[0][0]]
         for i in range(1, self.tetris_parallel_model.number_of_games):
-            id_1 = random.randint(0, n - 1)
-            id_2 = random.randint(0, n - 1)
-            agents.append(agents_game_mapping[id_1][0].get_child(agents_game_mapping[id_2][0], games[i]))
+            agent_id = random.randint(1, n - 1)
+            # every new agent is based on the winner and some other random agent
+            agents.append(agents_game_mapping[0][0].get_child(agents_game_mapping[agent_id][0], games[i]))
+
         self.tetris_parallel_model.agents = agents
 
     def all_games_over(self):
@@ -329,11 +302,24 @@ class TetrisParallelController:
             self.tetris_parallel_model.agents.append(Agent(self.tetris_parallel_model.tetris_games[i]))
 
     def toggle_display_mode(self):
-        self.tetris_parallel_model.display_best_of_generation = not self.tetris_parallel_model.display_best_of_generation
+        toggle_value = not self.tetris_parallel_model.display_best_of_generation
+        self.tetris_parallel_model.display_best_of_generation = toggle_value
 
     def drop(self):
         for tetris_game in self.tetris_parallel_model.tetris_games:
             tetris_game.tetris_controller.drop()
+
+    def update_best_overall_agent(self, high_score: int, high_score_lines: int, weight_line_cleared: float,
+                                  weight_aggregate_height: float, weight_holes: float, weight_bumpiness: float,
+                                  mutation_chance: float):
+        self.tetris_parallel_model.high_score = high_score
+        self.tetris_parallel_model.high_score_lines = high_score_lines
+
+        self.tetris_parallel_model.weight_line_cleared = weight_line_cleared
+        self.tetris_parallel_model.weight_aggregate_height = weight_aggregate_height
+        self.tetris_parallel_model.weight_holes = weight_holes
+        self.tetris_parallel_model.weight_bumpiness = weight_bumpiness
+        self.tetris_parallel_model.mutation_chance = mutation_chance
 
     def quit(self):
         self.tetris_parallel_model.running = False

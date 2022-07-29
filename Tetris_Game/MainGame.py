@@ -1,4 +1,4 @@
-import sys
+import random
 from datetime import *
 
 import pygame as pygame
@@ -8,7 +8,6 @@ from Tetris_Game.Board import TetrisBoard
 from Tetris_Game.Controls import Direction, Turn
 from Tetris_Game.Settings import *
 from Tetris_Game.Shape import Shape, ShapeForms
-import random
 
 
 class Tetris:
@@ -71,7 +70,6 @@ class TetrisModel:
 
         self.score = 0
         self.lines = 0
-        self.fitness = 0
         self.high_score = 0
         self.high_score_lines = 0
 
@@ -278,11 +276,6 @@ class TetrisView:
         self.draw_text(text=high_score_text, font_size=16, x=text_x_start, y=text_y_start)
         text_y_start += 30 * self.text_scale
 
-        # Fitness score
-        fitness_text = MESSAGES.get("FITNESS").format(self.tetris_model.fitness)
-        self.draw_text(text=fitness_text, font_size=16, x=text_x_start, y=text_y_start)
-        text_y_start += 30 * self.text_scale
-
         # Speed
         speed = SPEED_DEFAULT if not SPEED_SCALE_ENABLED else \
             int(max(50, SPEED_DEFAULT - self.tetris_model.score * SPEED_SCALE))
@@ -414,8 +407,6 @@ class TetrisControl:
     def calculate_scores(self):
         score_count = self.tetris_model.game_board.remove_full_rows()
 
-        # Calculate fitness score
-        self.tetris_model.fitness = TetrisUtilities.get_fitness_score(self.tetris_model.game_board, score_count)
         # If cleared nothing, early return
         if score_count == 0:
             return
