@@ -341,14 +341,14 @@ class TetrisView:
         if outline_only:
             # Outline-only for prediction location
             pygame.draw.rect(self.screen,
-                             self.get_color_tuple(COLORS.get("TILE_" + SHAPES[val - 1])),
+                             self.get_color_tuple(COLORS.get("TILE_" + SHAPE_CHARS[val - 1])),
                              (x + 1 + self.offset_x,
                               y + 1 + self.offset_y, self.grid_size - 2,
                               self.grid_size - 2),
                              1)
         else:
             pygame.draw.rect(self.screen,
-                             self.get_color_tuple(COLORS.get("TILE_" + SHAPES[val - 1])),
+                             self.get_color_tuple(COLORS.get("TILE_" + SHAPE_CHARS[val - 1])),
                              (x + self.offset_x,
                               y + self.offset_y,
                               self.grid_size,

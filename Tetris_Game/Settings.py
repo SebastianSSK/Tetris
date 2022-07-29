@@ -69,9 +69,9 @@ MESSAGES = {
 }
 
 # shapes
-
-SHAPES = ['I', 'O', 'T', 'J', 'L', 'S', 'Z']
+SHAPE_CHARS = ['I', 'O', 'T', 'J', 'L', 'S', 'Z']
 SHAPES_ID = {'I': 1, 'O': 2, 'T': 3, 'J': 4, 'L': 5, 'S': 6, 'Z': 7}
+
 
 I_shape = [[1], [1], [1], [1]]
 

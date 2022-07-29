@@ -168,7 +168,7 @@ class TetrisBoard:
                 if val == 0:
                     continue
                 distance = self.column_list[x + rel_x].distance_to_next_element(y - rel_y)
-                # check if distance is smaller then current min distance
+                # check if distance is smaller than current min distance
                 if distance < result:
                     result = distance
                     # check if collision happened
