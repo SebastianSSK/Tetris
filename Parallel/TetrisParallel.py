@@ -269,7 +269,7 @@ class TetrisParallelController:
         agents_game_mapping = list(zip(agents, games))
         n = len(agents_game_mapping) // 2
         # sort best agents
-        agents_game_mapping = sorted(agents_game_mapping, reverse=True, key=lambda x: x[1].tetris_model.score)[:n]
+        agents_game_mapping = sorted(agents_game_mapping, reverse=True, key=lambda x: x[1].tetris_model.score)
 
         if agents_game_mapping[0][1].tetris_model.score > self.tetris_parallel_model.high_score:
             self.update_best_overall_agent(high_score=agents_game_mapping[0][1].tetris_model.score,
@@ -279,19 +279,20 @@ class TetrisParallelController:
                                            weight_bumpiness=agents_game_mapping[0][0].weight_bumpiness,
                                            weight_aggregate_height=agents_game_mapping[0][0].weight_aggregate_height,
                                            mutation_chance=agents_game_mapping[0][0].mutation_weight)
-
+        # reset all games of the model
         for game in self.tetris_parallel_model.tetris_games:
             game.tetris_controller.reset_game()
 
-        # best agent will be part of next generation
+        # reset game state of the best agent
         agents_game_mapping[0][0].game = self.tetris_parallel_model.tetris_games[0]
-
+        # best agent will be part of next generation
         agents = [agents_game_mapping[0][0]]
-        for i in range(1, self.tetris_parallel_model.number_of_games):
-            agent_id = random.randint(1, n - 1)
-            # every new agent is based on the winner and some other random agent
-            agents.append(agents_game_mapping[0][0].get_child(agents_game_mapping[agent_id][0], games[i]))
 
+        for i in range(1, self.tetris_parallel_model.number_of_games):
+            # every new agent is based on the winner and another agent
+            agents.append(agents_game_mapping[0][0].get_child(agents_game_mapping[i][0], games[i]))
+
+        # set models agents to the new list of agents
         self.tetris_parallel_model.agents = agents
 
     def all_games_over(self):
