@@ -215,10 +215,10 @@ class TetrisView:
             .render(text, False, self.get_color_tuple(COLORS[color_str]))
 
     def draw_game_over(self):
-        text_image = self.get_text_central(text="GAME OVER", font_size=64, color_str="BACKGROUND_BLACK")
+        text_image = self.get_text_central(text="GAME OVER", font_size=64, color_str="WHITE")
 
         pygame.draw.rect(self.screen,
-                         self.get_color_tuple(COLORS.get("RED")),
+                         self.get_color_tuple(COLORS.get("GREY")),
                          (self.offset_x,
                           self.screen_height // 2 + self.offset_y,
                           self.text_x_start - self.margin, text_image.get_height()))
@@ -439,7 +439,7 @@ class TetrisControl:
     # GAME CONTROL METHODS
     def toggle_pause(self):
         """set paused of tetris model to true"""
-        self.tetris_model = True
+        self.tetris_model.paused = not self.tetris_model.paused
 
     def move_shape(self, direc):
         """

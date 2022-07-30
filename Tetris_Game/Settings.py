@@ -43,6 +43,7 @@ COLORS = {
     "PADDING_DARK": "004211",
     "TRIANGLE_GRAY": "efe6ff",
     "WHITE": "ffffff",
+    "GREY": "404040",
     "RED": "ff0000",
     # Tetris pieces
     "TILE_I": "ffb900",

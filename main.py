@@ -6,5 +6,5 @@ from Tetris_Game.MainGame import Tetris
 from Tetris_Game.Settings import I_shape, SPEED_DEFAULT
 
 if __name__ == '__main__':
-    TetrisParallel(2 * 4)
+    TetrisParallel(18)
     # Tetris(scale=1.0)
